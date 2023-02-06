@@ -89,6 +89,44 @@ app.post('/subscribe', (req, res) => {
     // return { message: 'Subscription added successfully' };
   })
 
+  app.post('/postToken', (req, res) => {
+    let token= req.body;
+    res.set('Content-Type', 'application/json');
+    // let payload = JSON.stringify({
+    //   "notification": {
+    //     "title": "WEGot ",
+    //     "body": "Thanks for subscribing to my channel",
+    //     "icon": "https://www.wegot.in/images/logo.svg"
+    //   },
+    //   "to":"/topics/all",
+    // });
+  })
+
+  app.post('/broadcast', (req, res) => {
+    let body=''
+    res.set('Content-Type', 'application/json');
+    let payload = JSON.stringify({
+      "notification": {
+        "title": "WEGot ",
+        "body": "Sent notification to all user",
+        "icon": "https://www.wegot.in/images/logo.svg"
+      }
+    });
+    // Promise.all(
+    //     USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, data)),
+    //   );
+    //   return { message: 'Notifications sent successfully' };
+  
+    Promise.resolve(USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, payload)))
+      .then(() => res.status(200).json({
+        message: 'Notification sent as broadcast'
+      }))
+      .catch(err => {
+        console.error(err);
+        res.sendStatus(500);
+      })
+  })
+
 app.listen(3000, () => {
   console.log('Listening on port 3000...');
 });
