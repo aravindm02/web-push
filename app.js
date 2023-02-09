@@ -3,11 +3,11 @@ let bodyParser = require('body-parser');
 let cors = require('cors');
 let webpush = require('web-push');
 let app = express();
+let newVapId =webpush.generateVAPIDKeys()
+console.log('VAP ID',newVapId);
 
-// console.log(webpush.generateVAPIDKeys());
-
-const publicKey='BK51L9mfjEzKIpUZOsYSqprvVLO5daVjqGsusTQDHKnkAgV0hoERDuOg_yT2k94wG7kRuyDTv64oFoQQLS8hjAY'
-const privateKey='WwuFzSYWQThXGGq72cdlITTRUId1Iri7C_051pD83eM'
+const publicKey= newVapId.publicKey   //'BK51L9mfjEzKIpUZOsYSqprvVLO5daVjqGsusTQDHKnkAgV0hoERDuOg_yT2k94wG7kRuyDTv64oFoQQLS8hjAY'
+const privateKey= newVapId.privateKey //'WwuFzSYWQThXGGq72cdlITTRUId1Iri7C_051pD83eM'
 
 const USER_SUBSCRIPTIONS=[]
 
@@ -16,6 +16,10 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 app.use(cors());
+
+app.get('/getVapId', (req, res) => {
+  res.send('vapId generated',newVapId);
+});
 
 app.get('/', (req, res) => {
   res.send('This is a push notification server use post');
