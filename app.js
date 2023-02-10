@@ -3,11 +3,10 @@ let bodyParser = require('body-parser');
 let cors = require('cors');
 let webpush = require('web-push');
 let app = express();
-let newVapId =webpush.generateVAPIDKeys()
-console.log('VAP ID',newVapId);
 
-const publicKey= newVapId.publicKey   //'BK51L9mfjEzKIpUZOsYSqprvVLO5daVjqGsusTQDHKnkAgV0hoERDuOg_yT2k94wG7kRuyDTv64oFoQQLS8hjAY'
-const privateKey= newVapId.privateKey //'WwuFzSYWQThXGGq72cdlITTRUId1Iri7C_051pD83eM'
+
+var publicKey; //= newVapId.publicKey   //'BK51L9mfjEzKIpUZOsYSqprvVLO5daVjqGsusTQDHKnkAgV0hoERDuOg_yT2k94wG7kRuyDTv64oFoQQLS8hjAY'
+var privateKey; //= newVapId.privateKey //'WwuFzSYWQThXGGq72cdlITTRUId1Iri7C_051pD83eM'
 
 const USER_SUBSCRIPTIONS=[]
 
@@ -17,15 +16,19 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 app.use(cors());
 
-app.get('/getVapId', (req, res) => {
-  res.send('vapId generated',newVapId);
+app.get('/api/getVapId', (req, res) => {
+  let newVapId =webpush.generateVAPIDKeys()
+  publicKey=newVapId.publicKey
+  privateKey=newVapId.privateKey
+console.log('VAP ID',newVapId);
+  res.send(newVapId);
 });
 
-app.get('/', (req, res) => {
+app.get('/api/', (req, res) => {
   res.send('This is a push notification server use post');
 });
 
-app.post('/triggerNotification', (req, res) => {
+app.post('/api/triggerNotification', (req, res) => {
     let body=''
     res.set('Content-Type', 'application/json');
     let payload = JSON.stringify({
@@ -37,16 +40,16 @@ app.post('/triggerNotification', (req, res) => {
   });
 
   Promise.resolve(USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, payload)))
-    .then(() => res.status(200).json({
-      message: 'Update Notification sent'
-    }))
-    .catch(err => {
-      console.error(err);
-      res.sendStatus(500);
-    })
+  .then(() => res.status(200).json({
+    message: 'Update Notification sent'
+  }))
+  .catch(err => {
+    console.error(err);
+    res.sendStatus(500);
+  })
 })
 
-app.post('/notify', (req, res) => {
+app.post('/api/notify', (req, res) => {
     let body=''
     res.set('Content-Type', 'application/json');
     let payload = JSON.stringify({
@@ -71,7 +74,7 @@ app.post('/notify', (req, res) => {
       })
   })
 
-app.post('/subscribe', (req, res) => {
+app.post('/api/subscribe', (req, res) => {
     let sub = req.body;
     res.set('Content-Type', 'application/json');
     webpush.setVapidDetails(
@@ -83,6 +86,7 @@ app.post('/subscribe', (req, res) => {
     USER_SUBSCRIPTIONS.length = 0;
     Promise.resolve(USER_SUBSCRIPTIONS.push(sub))
     .then(() => res.status(200).json({
+      status:1,
       message: 'Subscription added successfully'
     }))
     .catch(err => {
@@ -93,7 +97,7 @@ app.post('/subscribe', (req, res) => {
     // return { message: 'Subscription added successfully' };
   })
 
-  app.post('/postToken', (req, res) => {
+  app.post('/api/postToken', (req, res) => {
     let token= req.body;
     res.set('Content-Type', 'application/json');
     // let payload = JSON.stringify({
@@ -106,7 +110,7 @@ app.post('/subscribe', (req, res) => {
     // });
   })
 
-  app.post('/broadcast', (req, res) => {
+  app.post('/api/broadcast', (req, res) => {
     let body=''
     res.set('Content-Type', 'application/json');
     let payload = JSON.stringify({
