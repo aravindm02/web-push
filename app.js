@@ -19,7 +19,6 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.get('/api/getVapId', (req, res) => {
-  uid=req.body
   let newVapId = webpush.generateVAPIDKeys()
   publicKey = newVapId.publicKey
   privateKey = newVapId.privateKey
@@ -84,7 +83,8 @@ app.post('/api/notify', (req, res) => {
 })
 
 app.post('/api/subscribe', (req, res) => {
-  let sub = req.body;
+  let sub = req.body.subscription;
+  uid = req.body.uid;
   res.set('Content-Type', 'application/json');
   webpush.setVapidDetails(
     'mailto:example@yourdomain.org',
