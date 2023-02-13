@@ -12,6 +12,8 @@ var privateKey;
 
 const USER_SUBSCRIPTIONS = []
 
+var subsList=[]
+
 app.use(bodyParser.urlencoded({
   extended: false
 }));
@@ -71,7 +73,8 @@ app.post('/api/notify', (req, res) => {
   //     USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, data)),
   //   );
   //   return { message: 'Notifications sent successfully' };
-
+  console.log("subs",USER_SUBSCRIPTIONS)
+  // let subs=subsList.filter(e=>e.uid)
   Promise.resolve(USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, payload)))
     .then(() => res.status(200).json({
       message: 'Notification sent'
@@ -83,17 +86,18 @@ app.post('/api/notify', (req, res) => {
 })
 
 app.post('/api/subscribe', (req, res) => {
-  let sub = req.body.subscription;
-  uid = req.body.uid;
+  let sub = req.body?.subscription;
+  uid = req.body?.uid;
   res.set('Content-Type', 'application/json');
   webpush.setVapidDetails(
     'mailto:example@yourdomain.org',
     publicKey,
     privateKey
   );
+   subsList.push(req.body)
   // USER_SUBSCRIPTIONS = sub
-  USER_SUBSCRIPTIONS.length = 0;
-  Promise.resolve(USER_SUBSCRIPTIONS.push(sub))
+  // USER_SUBSCRIPTIONS.length = 0;
+   Promise.resolve(USER_SUBSCRIPTIONS.push(sub))
     .then(() => res.status(200).json({
       status: 1,
       message: 'Subscription added successfully',
