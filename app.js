@@ -33,7 +33,7 @@ app.get('/api/', (req, res) => {
 });
 
 app.post('/api/triggerNotification', (req, res) => {
-  let body = ''
+  let id = req.body.id
   res.set('Content-Type', 'application/json');
   let payload = JSON.stringify({
     "notification": {
@@ -46,18 +46,27 @@ app.post('/api/triggerNotification', (req, res) => {
     }
   });
 
-  Promise.resolve(USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, payload)))
-    .then(() => res.status(200).json({
+  USER_SUBSCRIPTIONS.map((res) => {
+    if(res.deviceId==id){
+      webpush.setVapidDetails(
+        'mailto:example@yourdomain.org',
+        res.publicKey,
+        res.privateKey
+      );
+      webpush.sendNotification(res.sub, payload)
+    }else return
+   res.status(200).json({
       message: 'Update Notification sent'
-    }))
-    .catch(err => {
-      console.error(err);
-      res.sendStatus(500);
+    })
+    // .catch(err => {
+    //   console.error(err);
+    //   res.sendStatus(500);
     })
 })
 
 app.post('/api/notify', (req, res) => {
-  let body = ''
+  console.log("id",req.body)
+  let id = req.body.id
   res.set('Content-Type', 'application/json');
   let payload = JSON.stringify({
     "notification": {
@@ -69,20 +78,29 @@ app.post('/api/notify', (req, res) => {
       }
     }
   });
-  // Promise.all(
-  //     USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, data)),
-  //   );
-  //   return { message: 'Notifications sent successfully' };
-  console.log("subs",USER_SUBSCRIPTIONS)
+  console.log("id",id)
+  console.log("notify subs",USER_SUBSCRIPTIONS)
   // let subs=subsList.filter(e=>e.uid)
-  Promise.resolve(USER_SUBSCRIPTIONS.map((sub) => webpush.sendNotification(sub, payload)))
-    .then(() => res.status(200).json({
-      message: 'Notification sent'
-    }))
-    .catch(err => {
-      console.error(err);
-      res.sendStatus(500);
+  // Promise.all(USER_SUBSCRIPTIONS.map((res) => webpush.sendNotification(res.sub, payload)))
+    USER_SUBSCRIPTIONS.map((res) => {
+      // if(res.deviceId==id){
+        webpush.setVapidDetails(
+          'mailto:example@yourdomain.org',
+          res.publicKey,
+          res.privateKey
+        );
+        webpush.sendNotification(res.sub, payload)
+      // }else return
     })
+   
+      res.status(200).json({
+      message: 'Notification sent'
+      })
+      // console.log("subs",USER_SUBSCRIPTIONS)
+    // .catch(err => {
+    //   console.error(err);
+    //   res.sendStatus(500);
+    // })
 })
 
 app.post('/api/subscribe', (req, res) => {
@@ -94,21 +112,24 @@ app.post('/api/subscribe', (req, res) => {
     publicKey,
     privateKey
   );
-   subsList.push(req.body)
-  // USER_SUBSCRIPTIONS = sub
+  //  subsList.push(req.body)
   // USER_SUBSCRIPTIONS.length = 0;
-   Promise.resolve(USER_SUBSCRIPTIONS.push(sub))
-    .then(() => res.status(200).json({
+    USER_SUBSCRIPTIONS.push({
+    "sub":sub,
+    "deviceId":uid,
+    "publicKey":publicKey,
+    "privateKey":privateKey
+   })
+    res.status(200).json({
       status: 1,
       message: 'Subscription added successfully',
       deviceId: uid
-    }))
-    .catch(err => {
-      console.error(err);
-      res.sendStatus(500);
     })
+    // .catch(err => {
+    //   console.error(err);
+    //   res.sendStatus(500);
+    // })
   console.log(USER_SUBSCRIPTIONS);
-  // return { message: 'Subscription added successfully' };
 })
 
 app.post('/api/postToken', (req, res) => {
