@@ -106,29 +106,51 @@ app.post('/api/notify', (req, res) => {
 app.post('/api/subscribe', (req, res) => {
   let sub = req.body?.subscription;
   uid = req.body?.uid;
+  let type = req.body?.type;
+  console.log('type',req.body)
+  console.log('type',type)
   res.set('Content-Type', 'application/json');
-  webpush.setVapidDetails(
-    'mailto:example@yourdomain.org',
-    publicKey,
-    privateKey
-  );
-  //  subsList.push(req.body)
-  // USER_SUBSCRIPTIONS.length = 0;
-    USER_SUBSCRIPTIONS.push({
-    "sub":sub,
-    "deviceId":uid,
-    "publicKey":publicKey,
-    "privateKey":privateKey
-   })
+  if(type=='unsubscribe'){
+    let index=USER_SUBSCRIPTIONS.findIndex(e=>e.deviceId==uid)
+    console.log('index sub',index)
+    USER_SUBSCRIPTIONS.splice(index,1)
+    console.log('user unsub',USER_SUBSCRIPTIONS)
+    const id=[]
+    USER_SUBSCRIPTIONS.map(e=>id.push(e.deviceId))
+   
     res.status(200).json({
       status: 1,
-      message: 'Subscription added successfully',
-      deviceId: uid
+      message: 'Subscription unsubscribed successfully',
+      deviceId: id
     })
-    // .catch(err => {
-    //   console.error(err);
-    //   res.sendStatus(500);
-    // })
+  }else{
+    webpush.setVapidDetails(
+      'mailto:example@yourdomain.org',
+      publicKey,
+      privateKey
+    );
+    //  subsList.push(req.body)
+    // USER_SUBSCRIPTIONS.length = 0;
+     const id=[]
+      USER_SUBSCRIPTIONS.push({
+      "sub":sub,
+      "deviceId":uid,
+      "publicKey":publicKey,
+      "privateKey":privateKey
+     })
+      USER_SUBSCRIPTIONS.map(e=>id.push(e.deviceId))
+   
+      res.status(200).json({
+        status: 1,
+        message: 'Subscription added successfully',
+        deviceId: id
+      })
+      // .catch(err => {
+      //   console.error(err);
+      //   res.sendStatus(500);
+      // })
+   
+  }
   console.log(USER_SUBSCRIPTIONS);
 })
 
